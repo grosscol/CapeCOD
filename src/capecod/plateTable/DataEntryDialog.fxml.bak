@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.net.*?>
+<?import java.util.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.image.Image ?>
+<?import javafx.scene.image.ImageView ?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane id="AnchorPane" fx:id="rootPane" prefHeight="200.0" prefWidth="250.0" styleClass="mainFxmlClass" xmlns:fx="http://javafx.com/fxml" fx:controller="capecod.plateTable.DataEntryDialogController">
+  <children>
+    <BorderPane prefHeight="200.0" prefWidth="250.0">
+      <bottom>
+        <AnchorPane prefHeight="52.0" prefWidth="250.0">
+          <children>
+            <HBox alignment="CENTER_RIGHT" prefHeight="100.0" prefWidth="200.0" styleClass="borderPanels" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+              <children>
+                <Button id="clearButton" mnemonicParsing="false" prefHeight="48.0" prefWidth="81.0" text="Clear" />
+                <Button id="enterButton" defaultButton="true" mnemonicParsing="false" onAction="#handleConfirmClick" prefHeight="52.0">
+                  <graphic>
+                    <ImageView fitHeight="32.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true">
+                      <image>
+                        <Image url="@resources/dialog-apply.png" preserveRatio="false" smooth="false" />
+                      </image>
+                    </ImageView>
+                  </graphic>
+                  <HBox.margin>
+                    <Insets bottom="2.0" left="2.0" right="1.0" top="2.0" />
+                  </HBox.margin>
+                </Button>
+                <Button id="cancelButton" cancelButton="true" mnemonicParsing="false" onAction="#handleCancelClick" prefHeight="52.0">
+                  <graphic>
+                    <ImageView fitHeight="32.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true">
+                      <image>
+                        <Image url="@resources/dialog-cancel-3.png" preserveRatio="false" smooth="false" />
+                      </image>
+                    </ImageView>
+                  </graphic>
+                  <HBox.margin>
+                    <Insets bottom="2.0" left="1.0" right="2.0" top="2.0" />
+                  </HBox.margin>
+                </Button>
+              </children>
+            </HBox>
+          </children>
+        </AnchorPane>
+      </bottom>
+      <center>
+        <AnchorPane prefHeight="200.0" prefWidth="200.0">
+          <children>
+            <TextField prefHeight="34.0" prefWidth="222.0" promptText="Empty" AnchorPane.bottomAnchor="30.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="30.0" />
+          </children>
+        </AnchorPane>
+      </center>
+      <top>
+        <AnchorPane prefHeight="52.0" prefWidth="250.0" styleClass="borderPanels">
+          <children>
+            <Label id="dlgTitle" prefHeight="52.0" prefWidth="222.0" text="Enter Something" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="2.0" />
+          </children>
+        </AnchorPane>
+      </top>
+    </BorderPane>
+  </children>
+  <stylesheets>
+    <URL value="@resources/dataentrydialog.css" />
+  </stylesheets>
+</AnchorPane>

@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.net.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane id="AnchorPane" prefHeight="523.999977929685" prefWidth="688.0" styleClass="mainFxmlClass" xmlns:fx="http://javafx.com/fxml" fx:controller="capecod.CodController">
+  <children>
+    <MenuBar minHeight="21.0" prefHeight="21.0" prefWidth="600.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+      <menus>
+        <Menu mnemonicParsing="false" text="File">
+          <items>
+            <MenuItem mnemonicParsing="false" onAction="#handleMenu_FileOpen" text="Open File(s)" fx:id="fmen_OpenFiles" />
+            <MenuItem mnemonicParsing="false" onAction="#handleBtn_Cancel" text="Close File(s)" fx:id="fmen_CloseFiles" />
+          </items>
+        </Menu>
+        <Menu mnemonicParsing="false" text="Edit">
+          <items>
+            <MenuItem mnemonicParsing="false" text="Delete" />
+          </items>
+        </Menu>
+        <Menu mnemonicParsing="false" text="Help">
+          <items>
+            <MenuItem mnemonicParsing="false" text="About" />
+          </items>
+        </Menu>
+      </menus>
+    </MenuBar>
+    <SplitPane dividerPositions="0.7944112126405304" focusTraversable="true" orientation="VERTICAL" prefHeight="379.0" prefWidth="600.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="21.0">
+      <items>
+        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
+          <children>
+            <SplitPane dividerPositions="0.8201754385964912" focusTraversable="true" prefHeight="185.0" prefWidth="598.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="1.0" AnchorPane.rightAnchor="-1.0" AnchorPane.topAnchor="0.0">
+              <items>
+                <AnchorPane id="swapPane" minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
+                  <children>
+                    <StackPane fx:id="swapStack" prefHeight="394.0" prefWidth="582.0000999999975" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                      <children>
+                        <TextArea fx:id="ta_welcome" editable="false" prefHeight="394.0" prefWidth="582.0" text="%mainIntro" wrapText="true" />
+                      </children>
+                    </StackPane>
+                  </children>
+                </AnchorPane>
+                <AnchorPane maxWidth="-Infinity" minHeight="0.0" minWidth="-Infinity" prefHeight="278.0" prefWidth="120.0">
+                  <children>
+                    <ToolBar fx:id="tbar_acts" orientation="VERTICAL" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                      <items>
+                        <Button id="btn_SwitchTorRequests" fx:id="btn_SwitchToPlate" mnemonicParsing="false" onAction="#handleBtn_SwithToPlate" prefHeight="48.0" prefWidth="115.0" text="Plate" textAlignment="CENTER" wrapText="true" />
+                        <Button id="btn_SwitchTorRequests" fx:id="btn_SwitchToAnalysis" graphicTextGap="5.0" mnemonicParsing="false" onAction="#handleBtn_SwitchToAnalysis" prefHeight="48.0" prefWidth="115.0" text="Analysis" textAlignment="CENTER" wrapText="true" />
+                        <Button id="btn_SwitchTorRequests" fx:id="btn_SwitchToReport" graphicTextGap="5.0" mnemonicParsing="false" onAction="#handleBtn_SwitchToReport" prefHeight="48.0" prefWidth="115.0" text="Report" textAlignment="CENTER" wrapText="true" />
+                        <Separator prefHeight="21.0" prefWidth="110.0" />
+                        <Button id="btn_commitEdits" fx:id="btn_execute" defaultButton="true" disable="true" mnemonicParsing="false" onAction="#handleBtn_Execute" prefHeight="30.0" prefWidth="110.0" text="Execute" textAlignment="CENTER" />
+                        <Button id="btn_cancelEdits" fx:id="btn_cancel" cancelButton="true" disable="true" mnemonicParsing="false" onAction="#handleBtn_Cancel" prefHeight="30.0" prefWidth="110.0" text="Cancel" />
+                      </items>
+                    </ToolBar>
+                  </children>
+                </AnchorPane>
+              </items>
+            </SplitPane>
+          </children>
+        </AnchorPane>
+        <AnchorPane maxHeight="100.0" minHeight="-Infinity" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
+          <children>
+            <TextArea fx:id="ta_info" editable="false" prefHeight="89.0" prefWidth="582.0" promptText="Program information goes here." text="%infoIntro" wrapText="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+          </children>
+        </AnchorPane>
+      </items>
+    </SplitPane>
+  </children>
+  <stylesheets>
+    <URL value="@resources/codpanel.css" />
+  </stylesheets>
+</AnchorPane>

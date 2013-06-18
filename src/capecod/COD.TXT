@@ -1,0 +1,479 @@
+100 'COD.BAS             (C)oncentration from (O)ptical (D)ensity    Ver. 2.6.2
+110 '
+120 'Donald E. White, M.S., IT Specialist              Phone:      301-496-1222
+130 'Surgery Branch, NCI  NIH  BLDG 10 RM 4-5762         FAX:      301-496-0011
+140 '10 Center Drive     Bethesda  MD 20892-1201      E-mail:  DonWhite@nih.gov
+150 '
+160 'Written in GWBASIC                                        January 27, 1995
+170 'To list program: PRN2FILE COD.TXT; WIDTH "LPT1:",255; LLIST
+180 '
+190 'Date      Change
+200 '--------  ----------------------------------------------------------------
+210 '07/20/96  Permit one or more standards to be skipped.
+220 '11/21/96  Read tab-delimited data file.
+230 '10/03/97  List filenames on Drive A: or B:
+240 '03/27/98  Prompt for Experiment (title, date, name).
+250 '10/01/02  Include Excel formulas in CSV file for calculating Final Conc.
+260 '          and display Final Conc. in original 96-well format.
+270 '01/25/05  Read tab-delimited data from Titertek Multiskan Ascent.
+280 '10/24/06  Display concentrations to two decimals.
+290 '05/06/10  Read tab-delimited data from Thermo Scientific Multiscan FC from a USB memory stick.
+292 '05/20/10  Process multiple files from Thermo Scientific Multiscan FC.
+300 COLOR 15,1,1: CLS
+310 PRINT "COD             (C)oncentration from (O)ptical (D)ensity    Ver. 2.6.2  D.White"
+320 PRINT "Ctrl-C = STOP   After Ok prompt, type: RUN to Restart, SYSTEM to Exit   5/20/10"
+330 PRINT "==============================================================================="
+340 ON ERROR GOTO 9000
+350 DIM R$(8),C$(12),WELL$(96),V$(25),OD(96),FINAL$(1152)
+360 E = 2.718282
+370 PLATE = 0
+380 P$(1)="A,": P$(2)="B,": P$(3)="C,": P$(4)="D,": P$(5)="E,": P$(6)="F,": P$(7)="G,": P$(8)="H,"
+390 T0$="     1      2      3"
+400 T1$="       1     2     3"
+410 T2$=CHR$(9)+"1"+CHR$(9)+"2"+CHR$(9)+"3"
+420 Q$ = " "+CHR$(34)                   'Space + Quote mark
+430 M$ = ", "                           'Comma + space
+440 CQ$ = ","+CHR$(34)                  'Comma + quote
+450 QC$ = CHR$(34)+","                  'Quote + comma
+460 QCQ$ = CHR$(34)+","+CHR$(34)        'Quote + comma + quote
+470 B0$ =  "                                                                               "
+480 V0$ =  "                                                                       ## \ \      #.###       ###  #.###  ####.##"
+490 V1$ =  "        ## \ \      #.###       ###  #.###  ####.##                    ## \ \      #.###       ###  #.###  ####.##"
+500 V2$ =  "        ## \ \-\ \  #.### #.### ###  #.###  ####.##  ####.##"
+510 X1$ =        " ## \ \    \\#.###\\     \\###\\#.###\\####.##\\#\\\  \\  \\  \\  \\\"
+520 X2$ =        " ## \ \-\ \\\#.###\\#.###\\###\\#.###\\####.##\\#\\\  \\  \\  \\  \\\####.##"
+530 UL$="_____________________________________________________________________________________________________"
+540 ' -------------------------------------------------------------------------
+550 ' Request input data file name and output option.
+560 LOCATE 4,1: PRINT B0$
+570 LOCATE 4,1: INPUT "Enter Drive (& Path) to list files [If E:\FC, press ENTER] ",A$
+580 IF LEFT$(A$,1)="E" OR LEFT$(A$,1)="e" OR A$="" THEN A$ = "E:\FC"    'Default for USB memory stick
+590 IF MID$(A$,2,1)=":" GOTO 630
+600   PRINT "Invalid Drive\Path Specification"
+610   GOTO 550
+620 '
+630 LOCATE 5,1: PRINT B0$
+640 A$ = A$+"\"
+650 F$ = A$+"*.*"
+660 FILES F$: LOCATE 6,1: PRINT F$                          'List all files in the folder.
+670 LOCATE 4,1: PRINT B0$
+680 LOCATE 4,1: INPUT "Filename (like 100102.txt or 20MAY10P.* or EXP*.txt): ",F1$
+690 F1$ = A$+F1$
+700 L = LEN(F1$)
+710 IF RIGHT$(F1$,1)   = "*" THEN FS$ = LEFT$(F1$,L-1)+"txt": F1$ = LEFT$(F1$,L-1)+"0??"
+720 IF MID$(F1$,L-4,1) = "*" THEN FS$ = LEFT$(LEFT$(F1$,L-5)+"ALL",8)+".PRN"
+730 WHILE RIGHT$(F1$,1) = "*" OR MID$(F1$,L-4,1) = "*"
+740   CMD$ = "copy "+F1$+" "+FS$
+750   BAT$ = "C:\Stats\Plates.bat"
+760   OPEN BAT$ FOR OUTPUT AS #1
+770   PRINT #1,CMD$
+780   PRINT #1,"exit"
+790   CLOSE #1
+800   SHELL "C:\Stats\Plates.bat"
+810   F1$ = FS$
+820   WEND
+830 ' Blank out lines 5-24.
+840 PRINT B0$: PRINT B0$: PRINT B0$: PRINT B0$
+850 PRINT B0$: PRINT B0$: PRINT B0$: PRINT B0$
+860 PRINT B0$: PRINT B0$: PRINT B0$: PRINT B0$
+870 PRINT B0$: PRINT B0$: PRINT B0$: PRINT B0$
+880 IF F1$="" GOTO 550
+890 OPEN F1$ FOR INPUT AS #1
+900 GOSUB 8000
+910 CLOSE #1
+920 OPEN F1$ FOR INPUT AS #1
+930 LOCATE  5,1: PRINT "Output to (P)rint, (E)xcel, (B)oth ?                                           ";
+940 WHILE O$<>"P" AND O$<>"F" AND O$<>"B"
+950   LOCATE 5,38: INPUT "", O$
+960   IF O$="p" THEN O$="P"
+970   IF O$="e" THEN O$="F"
+980   IF O$="E" THEN O$="F"
+990   IF O$="b" THEN O$="B"
+1000   WEND
+1010 IF O$="P" GOTO 1270
+1020 ' -------------------------------------------------------------------------
+1030 REM LOCATE 5,41: PRINT "For (E)xcel or (Q)uattro Pro ?"
+1040 REM WHILE EXT$<>".CSV" AND EXT$<>".PRN"
+1050 REM  LOCATE 5,72: INPUT "", EXT$
+1060 REM  IF EXT$="E" OR EXT$="e" THEN EXT$ = ".CSV"        'Comma separated values.
+1070 REM  IF EXT$="Q" OR EXT$="q" THEN EXT$ = ".PRN"        'Print file.
+1080 REM  WEND
+1090 IF O$<>"P" THEN EXT$=".CSV": Q$ = "": QCQ$ = ","
+1100 IF O$<>"P" THEN LOCATE 6,1: PRINT "Filename [C:\STATS\COD";EXT$;"] ? _____________________________________________";EXT$;
+1110 LOCATE 6,31: INPUT "", F2$
+1120 IF F2$="" THEN F2$ = "C:\STATS\COD": GOTO 1220
+1130 L = LEN(F2$)
+1140 J = 0
+1150 FOR I = 1 TO L
+1160   IF MID$(F2$,I,1)="." THEN J = 1
+1170   NEXT I
+1180 IF J=1 THEN LOCATE 7,1: PRINT "  Filename may not contain periods.  Press any key to continue.                ": A$=INKEY$: IF A$="" THEN 1180 ELSE GOTO 1100
+1190 IF LEFT$(F2$,1)="\" OR MID$(F2$,2,1)=":" GOTO 1220
+1200 IF L>8 THEN LOCATE 7,1: PRINT "  Filename may not be longer than 8 characters.  Press any key to continue.    ": A$=INKEY$: IF A$="" THEN 1200 ELSE GOTO 1100
+1210 F2$ = "C:\STATS\"+F2$
+1220 F2$ = F2$+EXT$
+1230 OPEN F2$ FOR OUTPUT AS #2
+1240 LOCATE 7,1: PRINT "  Output will be saved as:                                                     "
+1250 LOCATE 7,31: PRINT F2$
+1260 ' -------------------------------------------------------------------------
+1270 ' Prompt for Experiment (title, date, name).
+1280 LOCATE 8,1: INPUT "Exp. Title";T3$
+1290 IF T3$ = "" THEN T3$ = UL$
+1300 ' Request Standard Concentrations.
+1310 LOCATE  9,1: PRINT "Do Standards have constant Dilution Factor (Y,N)?                              ";
+1320 A$ = ""
+1330 WHILE A$<>"Y" AND A$<>"N"
+1340   LOCATE 9,51: INPUT "", A$
+1350   IF A$="y" THEN A$ = "Y"
+1360   IF A$="n" THEN A$ = "N"
+1370   WEND
+1380 IF A$="Y" GOTO 1560
+1390 LOCATE 13,1: PRINT "Enter values separated by spaces; for example: 492 219 67 22"
+1400 LOCATE 14,1: INPUT "Standards....: ";SC$
+1410 L = LEN(SC$)
+1420 IF L=0 GOTO 1400
+1430 I = 0: N = 1
+1440 WHILE N<=L
+1450   V = INSTR(N,SC$," ")
+1460   IF V=N THEN N = N+1: GOTO 1450
+1470   IF V=0 THEN V = L+1
+1480   I = I+1
+1490   M = V-N
+1500   SCO(I) = VAL(MID$(SC$,N,M))
+1510   IF SCO(I)=0 THEN PRINT "(Zero value ignored.)": I = I-1: GOTO 1540
+1520   N = V+1
+1530   WEND
+1540 NS = I
+1550 GOTO 1670
+1560 LOCATE 10,1: INPUT "Starting Standard Concentration................ ";SC
+1570 LOCATE 11,1: INPUT "Number of Standards on Plate................... ";NS
+1580 LOCATE 12,1: INPUT "Dilution Factor................................ ";DF
+1590 SCO(1) = SC
+1600 LOCATE 14,1: PRINT "Standards....: ";SC;
+1610 SCO(1) = SC
+1620 FOR I = 2 TO NS
+1630   SCO(I) = SCO(I-1)/DF
+1640   PRINT SCO(I);
+1650   NEXT I
+1660 PLATE = 0
+1670 ' -------------------------------------------------------------------------
+1680 LOCATE 15,1: INPUT "Number of Standards to SKIP.................[0] ";SK
+1690 FS = SK+1                  'First Standard
+1700 LS = NS                    'Last Standard
+1710 NS = NS-SK                 'Number of Standards
+1720 ' Search for beginning of 96-well plate.
+1730 GOSUB 8000
+1740 '
+1750 ' Read, edit, and store data.
+1760 PLATE = PLATE + 1
+1770 N = 0
+1780 FOR I = 1 TO 8
+1790   LINE INPUT #1,L$
+1800   K = P                                            'Start position.
+1810   IF TYPE$ = "Spaces" GOTO 1950
+1820 ' Read tab-delimited values in row order.
+1830   L = LEN(L$)
+1840   J = 0                            'J = Index of value (1-96)
+1850   P1 = P                           'P1 = Start, P2 = Length (of value)
+1860   FOR K = P TO L
+1870     IF MID$(L$,K,1)=CHR$(9) THEN P2=K-P1: J=J+1: V$(J)=MID$(L$,P1,P2): P1=K+1
+1880     IF K = L THEN P2=L-P1+1: J=J+1: V$(J)=MID$(L$,P1,P2)
+1890     NEXT K
+1900   FOR J = 1 TO 12                  'Convert character values to numeric
+1910     N = I + J*8 - 8                'rearranging into column order
+1920     OD(N) = VAL(V$(J))             'as each row is read.
+1930     NEXT J
+1940   GOTO 2030
+1950 ' Read fixed-length space-delimited records.
+1960   FOR J = 1 TO 12
+1970     OD$ = MID$(L$,K,6)
+1980     IF MID$(OD$,2,1)="*" THEN MID$(OD$,2,1) = "."
+1990     N = I + J*8 - 8
+2000     OD(N) = VAL(OD$)
+2010     K = K+Q                           'Q = Field interval.
+2020     NEXT J
+2030   NEXT I
+2040 ' -------------------------------------------------------------------------
+2050 D$ = DATE$: T$ = LEFT$(TIME$,5)
+2060 '
+2070 IF O$="F" GOTO 2180
+2080 WIDTH "LPT1:",255
+2090 ' HP LaserJet Esc. Seq.: Reset; Compressed Font; 6.85 LPI; Rt Margin = 132.
+2100 'LPRINT CHR$(27);"E";CHR$(27);"&k2S";CHR$(27);"&l7c4e70F";CHR$(27);"&a132M";
+2110 LPRINT "        COD              Concentration from Optical Density       Ver. 2.6.2                 ";D$; "  "; T$; "    Page "; PLATE
+2120 LPRINT
+2130 LPRINT "        Experiment: "; T3$
+2140 LPRINT
+2150 LPRINT "        Plate & Well  OD1   OD2  %D   Mean    Conc.     STDs     Used       R Squared"
+2160 LPRINT
+2170 '
+2180 IF O$="P" OR PLATE>1 GOTO 2260
+2190 PRINT #2,Q$;"Concentration from Optical Density       Ver. 2.6.2  ";D$; "  "; T$;"      ";F2$;Q$
+2200 PRINT #2,
+2210 PRINT #2,"Experiment:";M$;T3$
+2220 PRINT #2,
+2230 PRINT #2,Q$;"Plate & Well";QCQ$;"OD1";QCQ$;"OD2";QCQ$;"%D";QCQ$;"Mean";QCQ$;"Conc.";QCQ$;"Dilution";QCQ$;"Final Conc.";QCQ$;"STDs";QCQ$;"Used";QCQ$;"R Squared";QCQ$;"Test";
+2240 PRINT #2,
+2250 '
+2260 START = 1
+2270 IF PLATE>1 GOTO 3620
+2280 ' =========================================================================
+2290 ' Store the Background and Standard ODs and accumulate regression sums.
+2300 SUMX = 0: SUMX2 = 0: SUMY = 0: SUMY2 = 0: SUMXY = 0
+2310 LOCATE 14,63: PRINT "BKGs: ";OD(1);OD(2)
+2320 BKG = (OD(1) + OD(2)) / 2
+2330 FOR I = FS TO LS
+2340   SOD(I) = (OD(2*I+1) + OD(2*I+2)) / 2
+2350   SUMX  = SUMX +SCO(I)
+2360   SUMX2 = SUMX2+SCO(I)*SCO(I)
+2370   SUMY  = SUMY +SOD(I)-BKG
+2380   SUMY2 = SUMY2+(SOD(I)-BKG)*(SOD(I)-BKG)
+2390   SUMXY = SUMXY+SCO(I)*(SOD(I)-BKG)
+2400   LSCO(I) = LOG(SCO(I))
+2410   IF SOD(I)-BKG > 0 THEN LSOD(I) = LOG(SOD(I)-BKG)
+2420   SUMLX  = SUMLX +LSCO(I)
+2430   SUMLX2 = SUMLX2+LSCO(I)*LSCO(I)
+2440   SUMLY  = SUMLY +LSOD(I)
+2450   SUMLY2 = SUMLY2+LSOD(I)*LSOD(I)
+2460   SUMLXY = SUMLXY+LSCO(I)*LSOD(I)
+2470   NEXT I
+2480 '
+2490 ' Check Backgrounds.
+2500 IF ABS(OD(1)-BKG)/BKG <= .15 GOTO 2530
+2510 M1$ = "** BKGs > 15% Deviation from Mean **    "
+2520 LOCATE 15,1: PRINT M1$
+2530 IF BKG < SOD(LS) GOTO 2570
+2540 M2$ = "** Mean BKG OD > Last STD OD **"
+2550 LOCATE 15,41: PRINT M2$
+2560 '
+2570 ' Calculate Normal-Normal regression parameters.
+2580 SLNN = (NS*SUMXY - SUMX*SUMY)/(NS*SUMX2 - SUMX*SUMX)  'Slope
+2590 INNN = (SUMY - SLNN*SUMX)/NS                          'Intercept
+2600 R2NN = ((SUMXY-SUMX*SUMY/NS)^2)/((SUMX2-SUMX*SUMX/NS)*(SUMY2-SUMY*SUMY/NS))
+2610 '
+2620 ' Calculate Log-Log regression parameters.
+2630 SLLL = (NS*SUMLXY - SUMLX*SUMLY)/(NS*SUMLX2 - SUMLX*SUMLX)  'Slope
+2640 INLL = (SUMLY - SLLL*SUMLX)/NS                              'Intercept
+2650 R2LL = ((SUMLXY-SUMLX*SUMLY/NS)^2)/((SUMLX2-SUMLX*SUMLX/NS)*(SUMLY2-SUMLY*SUMLY/NS))
+2660 '
+2670 ' Display regression output and request choice.
+2680 R2NN$ = "(OK)": R2LL$ = "(OK)"
+2690 IF R2NN<.9 THEN R2NN$ = "(NG)"
+2700 IF R2LL<.9 THEN R2LL$ = "(NG)"
+2710 LOCATE 17,1: PRINT "STD ODs - Bkg: ";
+2720 FOR I = FS TO LS
+2730   PRINT USING "#.### ";SOD(I)-BKG;
+2740   NEXT I
+2750 LOCATE 17,66: PRINT "R Squared (Use)"
+2760 LOCATE 18,1: PRINT "Nml-Nml Curve: ";
+2770 FOR I = FS TO LS
+2780   Y = SLNN*SCO(I) + INNN
+2790   PRINT USING "#.### ";Y;
+2800   NEXT I
+2810 LOCATE 18,71: PRINT USING "#.## \  \";R2NN;R2NN$
+2820 '
+2830 LOCATE 19,1: PRINT "Log-Log Curve: ";
+2840 FOR I = FS TO LS
+2850   Y = E^(SLLL*LSCO(I) + INLL)
+2860   PRINT USING "#.### ";Y;
+2870   NEXT I
+2880 LOCATE 19,71: PRINT USING "#.## \  \";R2LL;R2LL$
+2890 IF R2NN=>.9 AND R2LL=>.9 GOTO 2970
+2900 IF R2NN<.9             THEN M3$ = "** Normal R Squared < 0.90; "
+2910 IF             R2LL<.9 THEN M3$ = "** Log R Squared < 0.90; "
+2920 IF R2NN<.9 AND R2LL<.9 THEN M3$ = "** Both R Squares < 0.90; "
+2930 M4$ = "BKGs or STDs may not be usable.  "
+2940 M5$ = "Check the data. **"
+2950 LOCATE 20,1: PRINT M3$; M4$; M5$
+2960 '
+2970 ' Request choice of regression curve to be used.
+2980 LOCATE 22,1:  PRINT "Use Normal or Log-Log.....................(N,L) ?";
+2990 A$ = ""
+3000 WHILE A$<>"N" AND A$<>"L"
+3010   LOCATE 22,51: INPUT "", A$
+3020   IF A$="n" THEN A$ = "N"
+3030   IF A$="l" THEN A$ = "L"
+3040   WEND
+3050 IF A$="N" THEN U$="N": USE$="Normal ": R2=R2NN: R2$=R2NN$: SLOPE=SLNN: INTER=INNN: GOTO 3080
+3060 IF A$="L" THEN U$="L": USE$="Log-Log": R2=R2LL: R2$=R2LL$: SLOPE=SLLL: INTER=INLL: GOTO 3080
+3070 GOTO 3010
+3080 '
+3090 ' Store Well Numbers.
+3100 R$(1)="A":R$(2)="B":R$(3)="C":R$(4)="D"
+3110 R$(5)="E":R$(6)="F":R$(7)="G":R$(8)="H"
+3120 C$(1)="1 ":C$(2)="2 ":C$(3)="3 ":C$(4)="4 ":C$(5)="5 ":C$(6)="6 "
+3130 C$(7)="7 ":C$(8)="8 ":C$(9)="9 ":C$(10)="10":C$(11)="11":C$(12)="12"
+3140 K = 0
+3150 FOR I = 1 TO 12
+3160   FOR J = 1 TO 8
+3170     K = K+1
+3180     WELL$(K) = R$(J)+C$(I)
+3190     NEXT J
+3200   NEXT I
+3210 '
+3220 ROW = 5
+3230 ' Print Messages.
+3240 IF M1$="" AND M2$="" AND M3$="" AND M4$="" AND M5$="" GOTO 3270
+3250 IF O$<>"F" THEN LPRINT "        ";M1$;M2$: LPRINT "        ";M3$;M4$;M5$: LPRINT
+3260 IF O$<>"P" THEN PRINT #2,Q$;M1$;M2$;Q$: PRINT #2,Q$;M3$;M4$;M5$;Q$: PRINT #2,: ROW=ROW+3
+3270 '
+3280 ' Print Background and Standards.
+3290 NF = 0
+3300 FOR I = 1 TO LS+1
+3310   ROW = ROW + 1
+3320   ROW$ = RIGHT$(STR$(10000+ROW),4)
+3330   N = 2*I-1
+3340   CONC = 0
+3350   MEAN = (OD(N) + OD(N+1)) / 2
+3360   PDEV = 0: IF MEAN>0 THEN PDEV = 100*ABS(OD(N)-MEAN)/MEAN
+3370   IF U$="N" THEN CONC = (MEAN-BKG-INTER)/SLOPE
+3380   IF U$="L" AND MEAN-BKG>0 THEN CONC = E^((LOG(MEAN-BKG)-INTER)/SLOPE)
+3390   IF CONC < 0 THEN CONC = 0
+3400   IF O$="F" GOTO 3450
+3410   LPRINT USING V2$; PLATE;WELL$(N);WELL$(N+1); OD(N);OD(N+1); PDEV;MEAN;CONC; SCO(I-1);
+3420   IF I=1 THEN LPRINT USING "     \     \    #.## \  \"; USE$; R2; R2$
+3430   IF I>1 AND I<=1+SK THEN LPRINT "     Skipped"  ELSE LPRINT
+3440   IF O$="P" GOTO 3510
+3450   PRINT #2,USING X2$;PLATE;WELL$(N);WELL$(N+1);M$;OD(N);M$;OD(N+1);M$;PDEV;M$;MEAN;M$;CONC;M$;1;CQ$;"=$F$";ROW$;"*$G$";ROW$;QC$;SCO(I-1);
+3460   IF I=1 THEN PRINT #2,USING "\\ \\\     \\\\\#.##\\\\\  \\\";M$;Q$;USE$;Q$;M$;R2;M$;Q$;R2$;Q$;
+3470   IF I>1 AND I<=1+SK THEN PRINT #2,USING "\\ \\\     \\\";M$;Q$;"Skipped";Q$;
+3480   PRINT #2,
+3490   NF = NF+1: FINAL$(NF) = "=$H$"+ROW$
+3500   NF = NF+1: FINAL$(NF) = "=$H$"+ROW$
+3510   NEXT I
+3520 IF O$<>"F" THEN LPRINT
+3530 '
+3540 ' Request number of sample replicates.
+3550 LOCATE 23,1:  PRINT "Number of Sample Replicates ..............(1,2) ?";
+3560 REPS = 0
+3570 WHILE REPS<1 OR REPS>2
+3580   LOCATE 23,51: INPUT "", REPS
+3590   WEND
+3600 '
+3610 START = 2*(LS+1)+1
+3620 ' =========================================================================
+3630 ' Calculate and print sample data.
+3640 IF REPS=2 GOTO 3990
+3650 '   Singles.
+3660 FOR N = START TO 96
+3670   ROW = ROW + 1
+3680   ROW$ = RIGHT$(STR$(10000+ROW),4)
+3690   CONC = 0
+3700   MEAN = OD(N)
+3710   PDEV = 0
+3720   IF U$="N" THEN CONC = (MEAN-BKG-INTER)/SLOPE
+3730   IF U$="L" AND MEAN-BKG>0 THEN CONC = E^((LOG(MEAN-BKG)-INTER)/SLOPE)
+3740   IF CONC < 0 THEN CONC = 0
+3750   IF O$<>"F" AND N<=16 THEN LPRINT USING V1$; PLATE;WELL$(N); OD(N); PDEV; MEAN; CONC
+3760   IF O$<>"F" AND N=8 THEN LPRINT
+3770   IF O$<>"P" THEN PRINT #2,USING X1$;PLATE;WELL$(N);M$;OD(N);M$;M$;PDEV;M$;MEAN;M$;CONC;M$;1;CQ$;"=$F$";ROW$;"*$G$";ROW$;QC$
+3780   NF = NF+1
+3790   FINAL$(NF) = "=$H$"+ROW$
+3800   NEXT N
+3810 IF O$<>"F" THEN LPRINT
+3820 IF O$="F" GOTO 4210
+3830 FOR N = 17 TO 56
+3840   CONC1 = 0: CONC2 = 0
+3850   MEAN1 = OD(N): MEAN2 = OD(N+40)
+3860   PDEV = 0
+3870   IF U$="N" THEN CONC1 = (MEAN1-BKG-INTER)/SLOPE
+3880   IF U$="N" THEN CONC2 = (MEAN2-BKG-INTER)/SLOPE
+3890   IF U$="L" AND MEAN1-BKG>0 THEN CONC1 = E^((LOG(MEAN1-BKG)-INTER)/SLOPE)
+3900   IF U$="L" AND MEAN2-BKG>0 THEN CONC2 = E^((LOG(MEAN2-BKG)-INTER)/SLOPE)
+3910   IF CONC1 < 0 THEN CONC1 = 0
+3920   IF CONC2 < 0 THEN CONC2 = 0
+3930   IF N <START THEN LPRINT USING V0$;                                           PLATE;WELL$(N+40); OD(N+40); PDEV;MEAN2; CONC2
+3940   IF N=>START THEN LPRINT USING V1$; PLATE;WELL$(N); OD(N); PDEV;MEAN1; CONC1; PLATE;WELL$(N+40); OD(N+40); PDEV;MEAN2; CONC2
+3950   IF N/8=INT(N/8) THEN LPRINT
+3960   NEXT N
+3970 GOTO 4200
+3980 '
+3990 '   Duplicates.
+4000 FOR N = START TO 95 STEP 2
+4010   ROW = ROW + 1
+4020   ROW$ = RIGHT$(STR$(10000+ROW),4)
+4030   CONC = 0
+4040   MEAN = (OD(N) + OD(N+1)) / 2
+4050   PDEV = 0: IF MEAN>0 THEN PDEV = 100*ABS(OD(N)-MEAN)/MEAN
+4060   IF U$="N" THEN CONC = (MEAN-BKG-INTER)/SLOPE
+4070   IF U$="L" AND MEAN-BKG>0 THEN CONC = E^((LOG(MEAN-BKG)-INTER)/SLOPE)
+4080   IF CONC < 0 THEN CONC = 0
+4090   IF O$="F" GOTO 4130
+4100   LPRINT   USING V2$; PLATE;WELL$(N);WELL$(N+1); OD(N);OD(N+1); PDEV;MEAN;CONC
+4110   IF (N+1)/8=INT((N+1)/8) THEN LPRINT
+4120   IF O$="P" GOTO 4180
+4130   PRINT #2,USING X2$;PLATE;WELL$(N);WELL$(N+1);M$;OD(N);M$;OD(N+1);M$;PDEV;M$;MEAN;M$;CONC;M$;1;CQ$;"=$F$";ROW$;"*$G$";ROW$;QC$
+4140   NF = NF+1
+4150   FINAL$(NF) = "=$H$"+ROW$
+4160   NF = NF+1
+4170   FINAL$(NF) = "=$H$"+ROW$
+4180   NEXT N
+4190 '
+4200 IF O$<>"F" THEN LPRINT CHR$(12)                    'IF O$<>"F" THEN LPRINT CHR$(27);"&l0H";            'Eject page.
+4210 GOTO 1720                                          'Read next plate.
+4220 '
+8000 ' =========================================================================
+8010 ' Search for beginning of 96-well plate.
+8020 WHILE 1
+8030   LINE INPUT #1,L$
+8040   B1$ = LEFT$(L$,20): B2$ = LEFT$(L$,6)
+8050   IF B1$=T0$ THEN B1$=" ": B2$=" ": P=3: Q=7: TYPE$="Spaces": RETURN
+8060   IF B1$=T1$ THEN LINE INPUT #1,L$: B1$=" ": B2$=" ": P=5: Q=6: TYPE$="Spaces": RETURN
+8070   IF B2$=T2$ THEN B1$=" ": B2$=" ": P=3: TYPE$="Tabbed": RETURN
+8080   IF LEFT$(L$,4) = "[DAT" THEN B1$=" ": B2$=" ": P=1: TYPE$="Spaces": RETURN
+8090   WEND
+8100 RETURN
+8110 ' Print Final Concentrations in 96-well format.
+8120 IF O$ = "P" GOTO 8460
+8130 PRINT #2,
+8140 PRINT #2, "Final Concentrations in 96-Well Format"
+8150 PRINT #2, "Plate,1,2,3,4,5,6,7,8,9,10,11,12"
+8160 FOR P = 1 TO PLATE
+8170   NP = 96*P - 96
+8180   PRINT #2, "_";P
+8190   FOR I = 1 TO 8
+8200     PRINT #2,USING "      \\"; P$(I);
+8210     FOR J = 1 TO 12
+8220       NF = NP + I + J*8 - 8
+8230       PRINT #2,FINAL$(NF);",";
+8240       NEXT J
+8250     PRINT #2,
+8260     NEXT I
+8270   PRINT #2,
+8280   NEXT P
+8290 ' Print Final Concentrations in Transposed 96-well format.
+8300 PRINT #2,
+8310 PRINT #2, "Final Concentrations in Transposed 96-Well Format"
+8320 PRINT #2, "Plate,A,B,C,D,E,F,G,H"
+8330 NF = 0
+8340 FOR P = 1 TO PLATE
+8350   PRINT #2, "_";P
+8360   FOR J = 1 TO 12
+8370     PRINT #2, J;",";
+8380     FOR I = 1 TO 8
+8390       NF = NF + 1
+8400       PRINT #2,FINAL$(NF);",";
+8410       NEXT I
+8420     PRINT #2,
+8430     NEXT J
+8440   PRINT #2,
+8450   NEXT P
+8460 RETURN
+9000 ' =========================================================================
+9010 ' Errors.
+9020 IF ERR=24 OR ERR=25 OR ERR=27 THEN LOCATE 17,1: PRINT "** Switch Printer ON or ON-LINE **": RESUME
+9030 IF ERR=52 THEN LOCATE 7,1: PRINT "** Invalid device name or filename **": RESUME 1100
+9040 IF ERR=53 THEN LOCATE 5,1: PRINT "** File(s) not found **": RESUME 670
+9050 IF ERR=62 AND PLATE=0 THEN LOCATE 5,1: PRINT "** Data not in 96-well format **    Press any key to exit.";: RESUME 9120
+9060 IF ERR=62 AND PLATE>0 THEN GOSUB 8110: RESUME 9140  'EOF.
+9070 IF ERR=71 THEN LOCATE 5,1: PRINT "** The disk drive door is open or a disk is not in the drive **": RESUME 670
+9080 IF ERR=75 THEN LOCATE 7,1: PRINT "** Path or file is not accessible **": RESUME 1100
+9090 IF ERR=76 THEN LOCATE 7,1: PRINT "** Unable to find the path specified **": RESUME 1100
+9100 ON ERROR GOTO 0
+9110 '
+9120 A$ = ""
+9130 A$ = INKEY$: IF A$="" THEN 9130
+9140 COLOR 15,1,1: CLS
+9150 'IF O$<>"F" THEN LPRINT CHR$(27);"E";               'Reset printer.
+9160 SYSTEM
+9170 END

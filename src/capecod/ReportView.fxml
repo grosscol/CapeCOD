@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.net.*?>
+<?import java.util.*?>
+<?import javafx.collections.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.chart.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane id="AnchorPane" prefHeight="400.0" prefWidth="600.0" styleClass="mainFxmlClass" xmlns:fx="http://javafx.com/fxml" fx:controller="capecod.ReportViewController">
+  <children>
+    <AnchorPane id="AnchorPane" layoutY="76.0" minHeight="148.0" prefHeight="148.0" prefWidth="252.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="348.0">
+      <children>
+        <LineChart id="LineChart" alternativeRowFillVisible="false" animated="false" createSymbols="false" horizontalGridLinesVisible="false" horizontalZeroLineVisible="false" legendVisible="false" minHeight="131.0" minWidth="179.0" prefHeight="148.0" prefWidth="252.0" title="Standards Regression" verticalGridLinesVisible="false" verticalZeroLineVisible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="7.0">
+          <xAxis>
+            <CategoryAxis side="BOTTOM">
+              <categories>
+                <FXCollections fx:factory="observableArrayList" />
+              </categories>
+            </CategoryAxis>
+          </xAxis>
+          <yAxis>
+            <NumberAxis side="LEFT" />
+          </yAxis>
+        </LineChart>
+      </children>
+    </AnchorPane>
+    <AnchorPane id="AnchorPane" layoutY="66.0" prefWidth="332.0" AnchorPane.rightAnchor="0.0">
+      <children>
+        <TextArea fx:id="modelInfo" editable="false" prefHeight="148.0" prefWidth="332.0" text="Model Summary" wrapText="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="7.0" />
+      </children>
+    </AnchorPane>
+    <ScrollPane id="ScrollPane" fitToHeight="true" fitToWidth="true" prefViewportHeight="176.0" prefViewportWidth="600.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="224.0">
+      <content>
+        <TextArea fx:id="wellOutput" prefHeight="176.0" prefWidth="587.0" text="Row by row well data." wrapText="true" />
+      </content>
+    </ScrollPane>
+    <AnchorPane id="AnchorPane" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+      <children>
+        <TextArea fx:id="reportHeader" editable="false" prefHeight="69.0" prefWidth="511.0" text="The report data will be filled in after an input file has been opened and the analysis has been executed." wrapText="true" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="87.0" AnchorPane.topAnchor="2.0" />
+        <Button mnemonicParsing="false" prefHeight="62.0" prefWidth="77.0" text="Save PDF" AnchorPane.bottomAnchor="2.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="2.0" />
+      </children>
+    </AnchorPane>
+  </children>
+  <stylesheets>
+    <URL value="@resources/reportview.css" />
+  </stylesheets>
+</AnchorPane>
