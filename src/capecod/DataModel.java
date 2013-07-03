@@ -9,6 +9,8 @@ package capecod;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -344,18 +346,19 @@ public class DataModel {
         if(logMod == null){return "Model is null";}
         
         StringBuilder sb = new StringBuilder("Log-Log Model:\n");
+        MathContext mc = new MathContext(4, RoundingMode.HALF_EVEN);
         
         sb.append("Background Ave. O.D: ")
-                .append(logMod.backgroundAve)
+                .append(logMod.backgroundAve.round(mc))
                 .append("\n");
         sb.append("Slope: ")
-                .append(logMod.slope)
+                .append(logMod.slope.round(mc))
                 .append("\n");
         sb.append("Intercept: ")
-                .append(logMod.intercept)
+                .append(logMod.intercept.round(mc))
                 .append("\n");
         sb.append("R-Squared: ")
-                .append(logMod.rSquared)
+                .append(logMod.rSquared.round(mc))
                 .append("\n");
         
         return sb.toString();

@@ -124,8 +124,8 @@ public class CodController implements Initializable {
         fc.setTitle("Open File");
         
         fc.getExtensionFilters().addAll(
-                new ExtensionFilter("Tab Delimeted Text","*.txt"),
-                new ExtensionFilter("Tab Delimeted Text","*.tab")
+                new ExtensionFilter("Tab Delimited Text","*.txt"),
+                new ExtensionFilter("Tab Delimited Text","*.tab")
                 );
         List<File> listInFiles = fc.showOpenMultipleDialog(null);
         

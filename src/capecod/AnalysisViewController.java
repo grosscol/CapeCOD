@@ -7,7 +7,6 @@ package capecod;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.util.Arrays;
-import java.util.List;
 import java.util.ResourceBundle;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -83,8 +82,7 @@ public class AnalysisViewController implements Initializable, SwapPanelControlle
 
     @Override
     public void cancel() {
-        //To change body of generated methods, choose Tools | Templates.
-        throw new UnsupportedOperationException("Not supported yet.");
+        /** CLEAR ANALYSIS */
     }
     
     String wellsToConcString(){
